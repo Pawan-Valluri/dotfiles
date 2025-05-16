@@ -1,10 +1,10 @@
 local map = vim.keymap.set
 
+
 return {
     "folke/snacks.nvim",
     priority = 1000,
     lazy = false,
-    ---@type snacks.Config
     opts = {
         -- your configuration comes here
         -- or leave it empty to use the default settings
@@ -36,9 +36,12 @@ return {
             },
         },
         -----------------------------------------------------------
-        dashboard = { enabled = false },
-        -----------------------------------------------------------
-        explorer = { enabled = false },
+        explorer = {
+            enabled = true,
+            opts = {
+                replace_netrw = true, -- Replace netrw with the snacks explorer
+            }
+        },
         -----------------------------------------------------------
         indent = {
             priority = 1,
@@ -78,8 +81,6 @@ return {
         },
         -----------------------------------------------------------
         input = { enabled = false },
-        -----------------------------------------------------------
-        picker = { enabled = false },
         -----------------------------------------------------------
         notifier = {
             enabled = true,
@@ -140,8 +141,57 @@ return {
         -----------------------------------------------------------
         lazygit = { enabled = false },
         -----------------------------------------------------------
+        dashboard = {
+            enabled = true,
+            preset = {
+                keys = {
+                    { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
+                    { icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
+                    { icon = " ", key = "g", desc = "Find Text", action = ":lua Snacks.dashboard.pick('live_grep')" },
+                    { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
+                    { icon = " ", key = "c", desc = "Config", action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.stdpath('config')})" },
+                    { icon = " ", key = "s", desc = "Restore Session", section = "session" },
+                    { icon = "󰒲 ", key = "L", desc = "Lazy", action = ":Lazy", enabled = package.loaded.lazy ~= nil },
+                    { icon = " ", key = "q", desc = "Quit", action = ":qa" },
+                    { icon = "P ", key = "p", desc = "Project", action = "<cmd>ProjectPicker<CR>"},
+                }
+            }
+        },
+        -----------------------------------------------------------
+        picker = { enabled = true },
+        -----------------------------------------------------------
     },
     init = function()
+
+        vim.api.nvim_create_user_command('ProjectPicker', function()
+            local items = {}
+            local longest_name = 0
+            for i, workspace in ipairs(require('workspaces').get()) do
+                table.insert(items, {
+                    idx = i,
+                    score = i,
+                    text = workspace.path,
+                    name = workspace.name,
+                })
+                longest_name = math.max(longest_name, #workspace.name)
+            end
+            longest_name = longest_name + 2
+            return Snacks.picker({
+                items = items,
+                format = function(item)
+                    local ret = {}
+                    ret[#ret + 1] = { ('%-' .. longest_name .. 's'):format(item.name), 'SnacksPickerLabel' }
+                    ret[#ret + 1] = { item.text, 'SnacksPickerComment' }
+                    return ret
+                end,
+                confirm = function(picker, item)
+                    picker:close()
+                    vim.cmd(('WorkspacesOpen %s'):format(item.name))
+                    vim.cmd(('lua Snacks.explorer()'))
+                end,
+            })
+        end, {})
+
         vim.api.nvim_create_autocmd("User", {
             pattern = "VeryLazy",
             callback = function()
@@ -156,11 +206,13 @@ return {
 
                 ------------------------------------------------------------------
                 -- Create some toggle mappings
-                
+                ------------------------------------------------------------------
                 -- dimming
                 Snacks.toggle.dim():map("<leader>D")
 
             end,
         })
+
+        vim.keymap.set('n', '<Leader>pc', "<cmd>ProjectPicker<CR>", { desc = "[C]hange Project" })
     end,
 }

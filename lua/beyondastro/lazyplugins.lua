@@ -1,4 +1,9 @@
 return {
+    {
+        'mg979/vim-visual-multi',
+        branch = "master",
+        lazy = false,
+    },
 
     {	-- toggles linenums to releative in normal mode
         "sitiom/nvim-numbertoggle",
@@ -16,27 +21,12 @@ return {
         -- config = require("beyondastro.remap").whichkey_extras
     },
 
-    -- {	-- Select themes interactively 
-    -- 	"zaldih/themery.nvim",
-    -- 	lazy = false,
-    -- 	config = function()
-    -- 		require("themery").setup({
-    -- 			themes = {
-    -- 				{
-    -- 				name = "Night Owl",
-    -- 					colorscheme = "night-owl",
-    -- 					before = [[
-    -- 						require("night-owl").setup()
-    -- 						vim.cmd.colorscheme("night-owl")
-    -- 					]]
-    -- 				},
-    -- 				"gruvbox-material",
-    -- 				"everforest",
-    -- 			},
-    -- 			livePreview = true,
-    -- 		})
-    -- 	end
-    -- },
+    {
+        "natecraddock/workspaces.nvim",
+        config = function()
+            require("workspaces").setup()
+        end,
+    },
 
     {	-- LSP Manager/Installer
         "mason-org/mason.nvim",
@@ -46,10 +36,24 @@ return {
         end
     },
 
+    {
+        "folke/lazydev.nvim",
+        ft = "lua",
+        opts = {
+            library = {
+                -- Add your plugin folders here
+                vim.fn.stdpath("config") .. "/lua/beyondastro",
+            },
+        },
+        -- config = function()
+        --     require("lazydev").setup()
+        -- end,
+    },
+
     {	-- Config for Mason(LSP Manager)
         "mason-org/mason-lspconfig.nvim",
         version = "1.32.0",
-        dependencies = { "neovim/nvim-lspconfig", "mason.nvim" },
+        dependencies = { "mason.nvim" },
         config = function()
             require("mason-lspconfig")
             require("mason-lspconfig").setup_handlers({
@@ -60,9 +64,40 @@ return {
         end,
     },
 
-    {	-- LSP config
+    {
         "neovim/nvim-lspconfig",
-        -- dependencies = { "mason-lspconfig" }
+        dependencies = {
+            "mason-lspconfig.nvim",
+            "lazydev.nvim",
+        },
+        -- opts = {
+        --     servers = {
+        --         lua_ls = {
+        --             settings = {
+        --                 Lua = {
+        --                     runtime = {
+        --                         version = "LuaJIT",
+        --                         path = vim.split(package.path, ";"),
+        --                     },
+        --                     diagnostics = {
+        --                         globals = { "vim" },
+        --                     },
+        --                     workspace = {
+        --                         checkThirdParty = false,
+        --                         library = {
+        --                             vim.env.VIMRUNTIME,
+        --                             vim.fn.stdpath("config") .. "/lua",
+        --                             vim.fn.stdpath("config") .. "/lua/beyondastro", -- Your plugin code
+        --                         },
+        --                     },
+        --                     telemetry = {
+        --                         enable = false,
+        --                     },
+        --                 },
+        --             },
+        --         },
+        --     },
+        -- },
     },
 
     {   -- Statusline
@@ -72,6 +107,13 @@ return {
             require("lualine").setup({
                 options = {
                     theme = "night-owl",
+                    -- Other separator symbols:
+                    -- █
+                    --   
+                    --   
+                    --   
+                    --   
+                    --   
                 },
                 sections = {
                     lualine_c = { '%f' },
