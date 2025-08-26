@@ -1,4 +1,4 @@
 require "config.gui"
-require "config.lazy"
 require "config.options"
+require "config.lazy"
 

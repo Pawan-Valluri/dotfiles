@@ -1,3 +1,5 @@
+local map = vim.keymap.set
+
 return {
     {
         'mg979/vim-visual-multi',
@@ -26,6 +28,46 @@ return {
         config = function()
             require("workspaces").setup()
         end,
+    },
+
+    {
+        'stevearc/oil.nvim',
+        ---@module 'oil'
+        ---@type oil.SetupOpts
+        opts = {
+            -- Send deleted files to the trash instead of permanently deleting them (:help oil-trash)
+            delete_to_trash = true,
+            -- Skip the confirmation popup for simple operations (:help oil.skip_confirm_for_simple_edits)
+            skip_confirm_for_simple_edits = true,
+            keymaps = {
+                ["g?"] = { "actions.show_help", mode = "n" },
+                ["<CR>"] = "actions.select",
+                ["<C-s>"] = { "actions.select", opts = { vertical = true } },
+                ["<C-h>"] = { "actions.select", opts = { horizontal = true } },
+                ["<C-t>"] = { "actions.select", opts = { tab = true } },
+                ["<C-p>"] = "actions.preview",
+                ["<C-c>"] = { "actions.close", mode = "n" },
+                ["<C-l>"] = "actions.refresh",
+                ["-"] = { "actions.parent", mode = "n" },
+                ["_"] = { "actions.open_cwd", mode = "n" },
+                ["`"] = { "actions.cd", mode = "n" },
+                ["~"] = { "actions.cd", opts = { scope = "tab" }, mode = "n" },
+                ["gs"] = { "actions.change_sort", mode = "n" },
+                ["gx"] = "actions.open_external",
+                ["g."] = { "actions.toggle_hidden", mode = "n" },
+                ["g\\"] = { "actions.toggle_trash", mode = "n" },
+            },
+
+            view_options = {
+                -- Show files and directories that start with "."
+                show_hidden = true,
+            },
+            -- Optional dependencies
+            -- dependencies = { { "echasnovski/mini.icons", opts = {} } },
+            dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
+            -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
+            lazy = false,
+        },
     },
 
     {	-- LSP Manager/Installer
@@ -124,6 +166,9 @@ return {
                         function()
                             return os.date("󱑀 %-I:%02M %p")
                         end,
+                        function()
+                            return vim.cmd("<cmd>echo $VIRTUAL_ENV<CR>")
+                        end,
                     },
                 }
             })
@@ -147,7 +192,7 @@ return {
         end,
     },
 
-    {
+    {   -- Togglable floating terminal
         'akinsho/toggleterm.nvim',
         version = "*",
         config = function()
@@ -173,4 +218,58 @@ return {
         end,
     },
 
+    {
+        'akinsho/bufferline.nvim',
+        version = "*",
+        dependencies = 'nvim-tree/nvim-web-devicons',
+        config = function()
+            vim.opt.termguicolors = true,
+            require("bufferline").setup({})
+        end
+    },
+
+    {   -- Python Virtual Environment Selector
+        "linux-cultist/venv-selector.nvim",
+        dependencies = {
+            "neovim/nvim-lspconfig",
+            "mfussenegger/nvim-dap", "mfussenegger/nvim-dap-python", --optional
+            { "nvim-telescope/telescope.nvim", branch = "0.1.x", dependencies = { "nvim-lua/plenary.nvim" } },
+        },
+        lazy = false,
+        branch = "regexp", -- This is the regexp branch, use this for the new version
+        -- keys = {
+        --     { ",v", "<cmd>VenvSelect<cr>" },
+        -- },
+        config = function()
+            map("n", ",v", "<cmd>VenvSelect<CR>", { desc = "Virual Environment Selector(python)" })
+            require("venv-selector").setup({
+                notify_user_on_venv_activation = true,
+                enable_default_searches = false,
+                search = {
+                    my_venvs = {
+                        command = "fd '/bin/python$' /home/beyond/Space/envs --full-path --color never -E /proc -I -a -L"
+                    },
+                },
+            })
+        end,
+        opts = {
+            -- Your settings go here
+        },
+    },
+
+    -- {    -- Forces you to use nvim the way it is intended
+    --     "m4xshen/hardtime.nvim",
+    --     lazy = false,
+    --     dependencies = { "MunifTanjim/nui.nvim" },
+    --     opts = {},
+    -- },
+
+    {
+        -- Typing practice/test
+        "nvzone/typr",
+        dependencies = "nvzone/volt",
+        opts = {},
+        cmd = { "Typr", "TyprStats" },
+    },
 }
+

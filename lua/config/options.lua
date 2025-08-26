@@ -1,6 +1,11 @@
+
+-- mapping leaderkey as spacebar
+vim.g.mapleader = " "
+
+
 local opt = vim.opt
 local o = vim.o
-local g = vim.g
+-- local g = vim.g
 
 -------------------------------------- options ------------------------------------------
 
